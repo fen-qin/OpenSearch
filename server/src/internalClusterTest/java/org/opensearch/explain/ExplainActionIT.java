@@ -305,4 +305,25 @@ public class ExplainActionIT extends OpenSearchIntegTestCase {
         result = Lucene.readExplanation(esBuffer);
         assertThat(exp.toString(), equalTo(result.toString()));
     }
+
+    public void testQueryRewrite() {
+        assertAcked(
+            prepareCreate("test").setMapping("obj1.field1", "type=keyword,store=true", "obj1.field2", "type=keyword,store=true")
+                .setSettings(Settings.builder().put("index.refresh_interval", 2))
+                .get()
+        );
+        ensureGreen("test");
+
+        client().prepareIndex("test").setId("1").setSource("field", "value1").get();
+
+        client().prepareIndex("test").setId("2").setSource("field", "value2").get();
+
+        refresh();
+        ExplainResponse response = client().prepareExplain(indexOrAlias(), "1").setQuery(QueryBuilders.termQuery("field", "value1")).get();
+
+        assertNotNull(response);
+        assertTrue(response.isMatch());
+        assertNotNull(response.getExplanation());
+        assertTrue(response.getExplanation().isMatch());
+    }
 }
