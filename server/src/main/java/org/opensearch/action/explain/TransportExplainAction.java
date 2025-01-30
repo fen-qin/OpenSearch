@@ -113,7 +113,7 @@ public class TransportExplainAction extends TransportSingleShardAction<ExplainRe
         if (request.query() == null) {
             rewriteListener.onResponse(request.query());
         } else {
-            Rewriteable.rewriteAndFetch(request.query(), searchService.getRewriteContext(timeProvider), rewriteListener);
+            Rewriteable.rewriteAndFetch(request.query(), searchService.getIndicesService().getRewriteContext(timeProvider), rewriteListener);
         }
     }
 
